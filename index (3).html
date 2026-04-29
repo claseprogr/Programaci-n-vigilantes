@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programación de Vigilantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Fraunces:wght@400;600;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --paper: #fdfbf5;
+    --ink: #1a1a1a;
+    --muted: #6b6458;
+    --line: #d4cdb9;
+    --accent: #c1272d;
+    --blue: #1e4d8b;
+    --green: #2d7a3e;
+    --grid: #e8e1d0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100vh;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .page { max-width: 1500px; margin: 0 auto; padding: 40px 32px 80px; }
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 42px;
+    line-height: 0.95;
+    letter-spacing: -1px;
+  }
+  h1 em { font-style: italic; color: var(--accent); font-weight: 600; }
+  .subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 8px;
+  }
+  .meta {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .meta strong { color: var(--ink); display: block; font-size: 14px; }
+
+  /* SECCIÓN ENUNCIADO */
+  .enunciado-box {
+    background: linear-gradient(135deg, #fff8e7 0%, #fef3d3 100%);
+    border: 2px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+  .enunciado-box h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+  .enunciado-box .sub {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 14px;
+  }
+  .enunciado-box textarea {
+    width: 100%;
+    min-height: 90px;
+    padding: 12px;
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+    margin-bottom: 12px;
+  }
+  .enunciado-box textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(193,39,45,0.2);
+  }
+  .enunciado-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .btn-resolver {
+    background: var(--green);
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    font-family: inherit;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.08s;
+  }
+  .btn-resolver:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--ink); }
+  .btn-resolver:active { transform: translate(0,0); box-shadow: none; }
+  .ejemplos {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .ejemplos a {
+    color: var(--blue);
+    text-decoration: underline;
+    cursor: pointer;
+    margin: 0 6px;
+  }
+  .ejemplos a:hover { color: var(--accent); }
+
+  .deteccion {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(45,122,62,0.1);
+    border-left: 3px solid var(--green);
+    font-size: 11px;
+    line-height: 1.6;
+    display: none;
+  }
+  .deteccion.show { display: block; }
+  .deteccion strong { color: var(--ink); }
+  .deteccion .item {
+    display: inline-block;
+    margin: 2px 4px;
+    padding: 2px 8px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    font-weight: 600;
+  }
+  .deteccion.error {
+    background: rgba(193,39,45,0.08);
+    border-left-color: var(--accent);
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 32px;
+  }
+  @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 24px;
+  }
+  .panel-title {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+  }
+  .panel-sub {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    margin-top: -4px;
+  }
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .field input[type="number"], .field input[type="text"], .field input[type="time"], .field select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(193,39,45,0.15);
+  }
+  .row { display: flex; gap: 12px; }
+  .row .field { flex: 1; }
+  .turnos-wrap {
+    border: 1px dashed var(--line);
+    padding: 14px;
+    margin-bottom: 16px;
+    background: rgba(0,0,0,0.015);
+  }
+  .turno-box {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .turno-header { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
+  .turno-header .horas { display: flex; gap: 4px; align-items: center; flex: 1; }
+  .turno-header input[type="time"] {
+    padding: 5px 6px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--blue);
+    width: 90px;
+  }
+  .turno-header .dash { color: var(--muted); font-weight: 700; padding: 0 2px; }
+  .turno-header .del {
+    background: none;
+    border: 1px solid var(--line);
+    width: 26px;
+    height: 26px;
+    cursor: pointer;
+    color: var(--accent);
+    font-weight: bold;
+    font-size: 14px;
+  }
+  .turno-header .del:hover { background: var(--accent); color: white; }
+  .turno-nombre-display {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+  .puestos-list { display: flex; flex-direction: column; gap: 6px; }
+  .puesto-row {
+    display: grid;
+    grid-template-columns: 1fr 60px 26px;
+    gap: 6px;
+    align-items: center;
+  }
+  .puesto-row input[type="text"] {
+    padding: 4px 8px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    font-family: inherit;
+    font-size: 11px;
+  }
+  .puesto-row .letra-start {
+    text-align: center;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 14px;
+    color: var(--accent);
+  }
+  .puesto-row .del-p {
+    background: none;
+    border: 1px solid var(--line);
+    cursor: pointer;
+    color: var(--accent);
+    font-weight: bold;
+    font-size: 14px;
+    height: 24px;
+  }
+  .puesto-row .del-p:hover { background: var(--accent); color: white; }
+  .add-puesto {
+    background: transparent;
+    border: 1px dashed var(--line);
+    padding: 5px 10px;
+    font-family: inherit;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    color: var(--muted);
+    margin-top: 8px;
+    width: 100%;
+  }
+  .add-puesto:hover { border-color: var(--ink); color: var(--ink); }
+  button.primary {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 12px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: 500;
+    transition: transform 0.08s;
+  }
+  button.primary:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--accent); }
+  button.primary:active { transform: translate(0,0); box-shadow: none; }
+  button.ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    padding: 8px 14px;
+    font-family: inherit;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+  }
+  button.ghost:hover { background: var(--ink); color: var(--paper); }
+  .presets { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .presets .ghost { font-size: 10px; padding: 6px 10px; }
+  .result-summary {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 20px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .result-summary .stat { text-align: center; }
+  .result-summary .stat .num {
+    font-family: 'Fraunces', serif;
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1;
+    color: #f4b942;
+  }
+  .result-summary .stat .lbl {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 6px;
+    opacity: 0.8;
+  }
+  .modo-banner {
+    background: var(--accent);
+    color: white;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modo-banner button {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: white;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .modo-banner button:hover { background: rgba(255,255,255,0.35); }
+  .table-wrap {
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    overflow-x: auto;
+    margin-bottom: 20px;
+  }
+  .table-head { padding: 20px 24px 16px; border-bottom: 1px solid var(--line); }
+  .table-head .tt { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; }
+  .table-head .ts {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  table.schedule {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 12px;
+  }
+  table.schedule th, table.schedule td {
+    border: 1px solid var(--line);
+    padding: 6px 4px;
+    text-align: center;
+    min-width: 28px;
+    font-variant-numeric: tabular-nums;
+  }
+  table.schedule th.day-num {
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--bg);
+    font-size: 10px;
+  }
+  table.schedule th.turno-label {
+    text-align: left;
+    padding-left: 12px;
+    min-width: 110px;
+    background: var(--bg);
+    font-weight: 500;
+    font-size: 11px;
+  }
+  table.schedule th.turno-label .h {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--blue);
+    font-weight: 600;
+  }
+  table.schedule th.turno-label .d {
+    display: block;
+    font-size: 9px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  table.schedule th.puesto-label {
+    text-align: left;
+    padding-left: 12px;
+    min-width: 100px;
+    background: var(--paper);
+    font-weight: 500;
+    font-size: 11px;
+  }
+  table.schedule td.cell {
+    font-weight: 700;
+    font-size: 13px;
+    cursor: default;
+    user-select: none;
+  }
+  table.schedule td.cell:hover { background: #fff3b0 !important; }
+  table.schedule.editable td.cell { cursor: cell; }
+  table.schedule.editable td.cell:hover {
+    background: #ffe066 !important;
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+  table.schedule td.cell-block-start { border-left: 2px solid var(--ink); }
+  .turno-divider td, .turno-divider th { border-top: 2px solid var(--ink) !important; }
+  .guide {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 16px 20px;
+    margin-top: 20px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .guide strong { color: var(--ink); }
+  .formula {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    padding: 12px 16px;
+    background: rgba(30,77,139,0.08);
+    border-left: 3px solid var(--blue);
+    margin: 16px 0;
+    color: var(--ink);
+  }
+  .formula code {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: normal;
+    background: var(--paper);
+    padding: 1px 6px;
+    border: 1px solid var(--line);
+  }
+  .actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .warn {
+    background: #fff3cd;
+    border: 1px solid #e6c67a;
+    padding: 10px 14px;
+    font-size: 11px;
+    margin-bottom: 16px;
+    color: #5c4a00;
+  }
+  .auto-btn {
+    background: var(--blue);
+    color: white;
+    border: none;
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+  .auto-btn:hover { background: #163a6b; }
+  .edit-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+  .edit-btn:hover { background: #8e1d22; }
+  .edit-btn.activo { background: var(--ink); }
+  .modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 24px;
+    max-width: 360px;
+    width: 90%;
+  }
+  .modal h3 { font-family: 'Fraunces', serif; font-size: 22px; margin-bottom: 6px; }
+  .modal p {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .modal input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid var(--ink);
+    background: var(--bg);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .modal-buttons { display: flex; gap: 8px; }
+  .modal-buttons button { flex: 1; }
+  footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-align: center;
+  }
+  @media print {
+    body { background: white; }
+    .panel.controls, footer, .actions, .modo-banner, .enunciado-box { display: none !important; }
+    .layout { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div>
+      <h1>Programación<br><em>de Vigilantes</em></h1>
+      <div class="subtitle">Investigación de Operaciones · Rotación de turnos</div>
+    </div>
+    <div class="meta">
+      <strong id="metaDate">—</strong>
+      Herramienta didáctica
+    </div>
+  </header>
+
+  <!-- SECCIÓN ENUNCIADO -->
+  <div class="enunciado-box">
+    <h2>Resolver desde el enunciado</h2>
+    <div class="sub">Pega el enunciado del ejercicio y la app lo resuelve</div>
+    <textarea id="enunciadoTxt" placeholder="Ejemplo: Se desean programar a los vigilantes de la planta. Trabajan 3 dias consecutivos, descansan 2 dias. Hay 2 turnos de 12 horas. Cada turno requiere 1 portero y 2 ronderos."></textarea>
+    <div class="enunciado-actions">
+      <button class="btn-resolver" id="btnResolver">Resolver ejercicio</button>
+      <span class="ejemplos">
+        Ejemplos:
+        <a data-ejemplo="planta">Planta</a>
+        <a data-ejemplo="conjunto">Conjunto</a>
+        <a data-ejemplo="fabrica">Fábrica</a>
+      </span>
+    </div>
+    <div class="deteccion" id="deteccion"></div>
+  </div>
+
+  <div class="layout">
+
+    <aside class="panel controls">
+      <div class="panel-title">Parámetros</div>
+      <div class="panel-sub">Configurar el ejercicio</div>
+
+      <div class="presets">
+        <button class="ghost" data-preset="planta">Planta (10)</button>
+        <button class="ghost" data-preset="conjunto">Conjunto (7)</button>
+        <button class="ghost" data-preset="fabrica">Fábrica (18)</button>
+        <button class="ghost" data-preset="vacio">Vacío</button>
+      </div>
+
+      <div class="field">
+        <label>Nombre del ejercicio</label>
+        <input type="text" id="exName" value="Planta industrial">
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Días trabajo (T)</label>
+          <input type="number" id="diasTrabajo" min="1" value="3">
+        </div>
+        <div class="field">
+          <label>Días descanso (D)</label>
+          <input type="number" id="diasDescanso" min="1" value="2">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Días a mostrar</label>
+          <input type="number" id="diasTotal" min="5" max="90" value="31">
+        </div>
+        <div class="field">
+          <label>Día inicio</label>
+          <input type="number" id="diaInicio" min="1" value="1">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Turnos y puestos</label>
+        <div class="turnos-wrap">
+          <div id="turnosList"></div>
+          <button class="ghost" id="addTurno" style="margin-top:8px; width:100%;">+ Añadir turno</button>
+          <button class="auto-btn" id="autoLetras">Auto-asignar letras</button>
+          <button class="edit-btn" id="modoColocar">Modo colocar letra (clic en celda)</button>
+        </div>
+      </div>
+
+      <button class="primary" id="calcular">Calcular y generar tabla</button>
+    </aside>
+
+    <main>
+      <div class="result-summary" id="summary">
+        <div class="stat"><div class="num" id="sVig">—</div><div class="lbl">Vigilantes</div></div>
+        <div class="stat"><div class="num" id="sPuestos">—</div><div class="lbl">Puestos/día</div></div>
+        <div class="stat"><div class="num" id="sHoras">—</div><div class="lbl">Horas/día</div></div>
+        <div class="stat"><div class="num" id="sCiclo">—</div><div class="lbl">Ciclo (días)</div></div>
+      </div>
+
+      <div class="formula" id="formulaBox">Selecciona un preset o configura y pulsa Calcular.</div>
+
+      <div id="modoBannerBox"></div>
+      <div id="warnBox"></div>
+
+      <div class="table-wrap">
+        <div class="table-head">
+          <div class="tt" id="tblTitle">Tabla de programación</div>
+          <div class="ts" id="tblSub">Cada letra representa un vigilante.</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="schedule" id="tabla">
+            <tbody>
+              <tr><td style="padding:40px; text-align:center; color:var(--muted);">
+                Configura los parámetros y pulsa <strong>Calcular</strong>.
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="ghost" id="btnPrint">Imprimir / PDF</button>
+        <button class="ghost" id="btnCopy">Copiar tabla</button>
+        <button class="ghost" id="btnCSV">Descargar CSV</button>
+      </div>
+
+      <div class="guide">
+        <strong>Resolver desde enunciado:</strong> pega el texto del ejercicio arriba y pulsa "Resolver". La app detecta días de trabajo/descanso, número de turnos, horas y puestos automáticamente.<br>
+        <strong>Fórmula:</strong> N = P × (T + D) / T<br>
+        <strong>Modo colocar letra:</strong> activa el botón rojo, haz clic en una celda y escribe la letra que el profesor pone ahí. La app recalcula la fila desde ese punto.<br>
+        <strong>Auto-asignar:</strong> rellena las letras iniciales con un patrón estándar.
+      </div>
+    </main>
+
+  </div>
+
+  <footer>Open source · MIT · github.com/tu-usuario/programacion-vigilantes</footer>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>Colocar letra</h3>
+    <p id="modalInfo">Día X · Puesto Y</p>
+    <input type="text" id="modalInput" maxlength="2" placeholder="A">
+    <div class="modal-buttons">
+      <button class="ghost" id="modalCancel">Cancelar</button>
+      <button class="primary" id="modalOk" style="width:auto;">Colocar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ EJEMPLOS DE ENUNCIADO ============
+const EJEMPLOS_TEXTO = {
+  planta: "Se desean programar a los vigilantes de la planta. Trabajan 3 dias consecutivos, descansan 2 dias. Hay 2 turnos de 12 horas. Cada turno requiere 1 portero y 2 ronderos. Cuantos vigilantes se requieren para minimizar el costo?",
+  conjunto: "Conjunto cerrado. Se requiere 1 vigilante de porteria y 1 vigilante rondero por turno. Trabajan 12 horas por dia. 3 dias de trabajo y 2 dias de descanso. Intercalar turno y area.",
+  fabrica: "En la fabrica le piden programar 4 puestos de trabajo (Torno, Fresa, Corte, Soldadura). Se trabajan 3 turnos de 8 horas. Se acuerda trabajar 4 dias y 2 dias de descanso consecutivo. Programe mayo al menor costo."
+};
+
+// ============ PRESETS ============
+const PRESETS = {
+  planta: {
+    name: 'Planta industrial',
+    T: 3, D: 2, totalDias: 31, diaInicio: 1,
+    turnos: [
+      { horaInicio: '06:00', horaFin: '18:00', puestos: [
+        { tipo: 'Portero', letraInicial: 'A' },
+        { tipo: 'Rondero 1', letraInicial: 'D' },
+        { tipo: 'Rondero 2', letraInicial: 'G' }
+      ]},
+      { horaInicio: '18:00', horaFin: '06:00', puestos: [
+        { tipo: 'Portero', letraInicial: 'F' },
+        { tipo: 'Rondero 1', letraInicial: 'I' },
+        { tipo: 'Rondero 2', letraInicial: 'B' }
+      ]}
+    ]
+  },
+  conjunto: {
+    name: 'Conjunto cerrado',
+    T: 3, D: 2, totalDias: 31, diaInicio: 1,
+    turnos: [
+      { horaInicio: '06:00', horaFin: '18:00', puestos: [
+        { tipo: 'Portero', letraInicial: 'A' },
+        { tipo: 'Rondero', letraInicial: 'D' }
+      ]},
+      { horaInicio: '18:00', horaFin: '06:00', puestos: [
+        { tipo: 'Portero', letraInicial: 'F' },
+        { tipo: 'Rondero', letraInicial: 'B' }
+      ]}
+    ]
+  },
+  fabrica: {
+    name: 'Fabrica (4 puestos x 3 turnos)',
+    T: 4, D: 2, totalDias: 31, diaInicio: 1,
+    turnos: [
+      { horaInicio: '06:00', horaFin: '14:00', puestos: [
+        { tipo: 'Torno', letraInicial: 'A' },
+        { tipo: 'Fresa', letraInicial: 'E' },
+        { tipo: 'Corte', letraInicial: 'J' },
+        { tipo: 'Soldadura', letraInicial: 'N' }
+      ]},
+      { horaInicio: '14:00', horaFin: '22:00', puestos: [
+        { tipo: 'Torno', letraInicial: 'M' },
+        { tipo: 'Fresa', letraInicial: 'Q' },
+        { tipo: 'Corte', letraInicial: 'D' },
+        { tipo: 'Soldadura', letraInicial: 'H' }
+      ]},
+      { horaInicio: '22:00', horaFin: '06:00', puestos: [
+        { tipo: 'Torno', letraInicial: 'G' },
+        { tipo: 'Fresa', letraInicial: 'K' },
+        { tipo: 'Corte', letraInicial: 'P' },
+        { tipo: 'Soldadura', letraInicial: 'B' }
+      ]}
+    ]
+  },
+  vacio: {
+    name: 'Nuevo ejercicio',
+    T: 3, D: 2, totalDias: 31, diaInicio: 1,
+    turnos: [
+      { horaInicio: '06:00', horaFin: '18:00', puestos: [
+        { tipo: 'Puesto 1', letraInicial: 'A' }
+      ]}
+    ]
+  }
+};
+
+let state = { turnos: [] };
+let modoColocar = false;
+let celdaActiva = null;
+
+// ============ PARSER DE ENUNCIADOS ============
+function parsearEnunciado(texto) {
+  const t = texto.toLowerCase().replace(/[áéíóú]/g, c => 'aeiou'['áéíóú'.indexOf(c)]);
+  const result = { puestos: [], errores: [] };
+
+  const numMap = { un:1, una:1, dos:2, tres:3, cuatro:4, cinco:5, seis:6, siete:7, ocho:8, nueve:9, diez:10 };
+  const aNum = (s) => isNaN(parseInt(s)) ? (numMap[s] || 0) : parseInt(s);
+  const numRe = '(\\d+|un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez)';
+
+  // 1. T y D combinados
+  let m = t.match(new RegExp(numRe + '\\s*dias?\\s+y\\s+' + numRe + '\\s*dias?\\s+(?:de\\s+)?descans'));
+  if (m) {
+    result.T = aNum(m[1]);
+    result.D = aNum(m[2]);
+  }
+
+  // 2. T solo
+  if (!result.T) {
+    m = t.match(new RegExp('trabaj\\w+\\s+' + numRe + '\\s*dias'));
+    if (!m) m = t.match(new RegExp(numRe + '\\s*dias?\\s*(?:consecutiv|de\\s+trabaj)'));
+    if (m) result.T = aNum(m[1]);
+  }
+
+  // 3. D solo
+  if (!result.D) {
+    m = t.match(new RegExp('descans\\w+\\s+' + numRe + '\\s*dias?'));
+    if (!m) m = t.match(new RegExp(numRe + '\\s*dias?\\s+de\\s+descans'));
+    if (m) result.D = aNum(m[1]);
+  }
+
+  // 4. Número de turnos
+  m = t.match(new RegExp(numRe + '\\s*turnos'));
+  if (m) result.numTurnos = aNum(m[1]);
+
+  // 5. Horas por turno
+  m = t.match(new RegExp('turnos?\\s+de\\s+' + numRe + '\\s*h'));
+  if (!m) m = t.match(new RegExp(numRe + '\\s*h(?:ora)?s?\\s*(?:x|por|al|/)\\s*dia'));
+  if (!m) m = t.match(new RegExp(numRe + '\\s*horas?\\s+consecutiv'));
+  if (!m) m = t.match(new RegExp(numRe + '\\s*horas?(?:\\b|\\s)'));
+  if (m) result.horasTurno = aNum(m[1]);
+
+  // 6. Puestos
+  m = t.match(new RegExp(numRe + '\\s*(?:vig(?:ilantes?)?\\s+(?:de\\s+)?)?porter[oai]'));
+  if (m) result.puestos.push({ tipo: 'Portero', cantidad: aNum(m[1]) });
+
+  m = t.match(new RegExp(numRe + '\\s*(?:vig(?:ilantes?)?\\s+(?:de\\s+)?)?ronder[oa]'));
+  if (m) result.puestos.push({ tipo: 'Rondero', cantidad: aNum(m[1]) });
+
+  const otros = ['torno', 'fresa', 'corte', 'soldadura', 'caja', 'recepcion', 'almacen', 'control', 'monitoreo'];
+  otros.forEach(nombre => {
+    if (t.includes(nombre)) {
+      if (!result.puestos.some(p => p.tipo.toLowerCase() === nombre)) {
+        result.puestos.push({ tipo: nombre.charAt(0).toUpperCase() + nombre.slice(1), cantidad: 1 });
+      }
+    }
+  });
+
+  // 7. Inferencias
+  // Si tenemos horas por turno pero no número de turnos, deducir: 24/horasTurno
+  if (result.horasTurno && !result.numTurnos) {
+    if (24 % result.horasTurno === 0) {
+      result.numTurnos = 24 / result.horasTurno;
+    } else {
+      result.numTurnos = 2;  // default
+    }
+  }
+
+  // Si no hay horas por turno, deducir: 24/numTurnos o asumir 12
+  if (!result.horasTurno) {
+    if (result.numTurnos && 24 % result.numTurnos === 0) {
+      result.horasTurno = 24 / result.numTurnos;
+    } else {
+      result.horasTurno = 12;
+      if (!result.numTurnos) result.numTurnos = 2;
+    }
+  }
+
+  // Validaciones
+  if (!result.T) result.errores.push('No se detectaron los días de trabajo');
+  if (!result.D) result.errores.push('No se detectaron los días de descanso');
+  if (result.puestos.length === 0) result.errores.push('No se detectaron puestos (porteros, ronderos, etc.)');
+
+  return result;
+}
+
+function aplicarEnunciadoParseado(parsed) {
+  if (parsed.errores.length > 0 && (!parsed.T || !parsed.D || parsed.puestos.length === 0)) {
+    return false;  // No se puede aplicar
+  }
+
+  // Construir turnos
+  const turnos = [];
+  const numTurnos = parsed.numTurnos || 2;
+  const horasTurno = parsed.horasTurno || 12;
+
+  // Calcular horas de inicio según número de turnos
+  // Si son 2 turnos de 12h: 6AM-6PM, 6PM-6AM
+  // Si son 3 turnos de 8h: 6AM-2PM, 2PM-10PM, 10PM-6AM
+  // Si son otras combinaciones, distribuir uniformemente desde las 6AM
+  const horaInicioBase = 6;
+  for (let i = 0; i < numTurnos; i++) {
+    const hi = (horaInicioBase + i * horasTurno) % 24;
+    const hf = (hi + horasTurno) % 24;
+    const fmt = (h) => `${String(h).padStart(2,'0')}:00`;
+
+    // Crear puestos para este turno (mismos en todos los turnos)
+    const puestosTurno = [];
+    parsed.puestos.forEach(p => {
+      if (p.cantidad === 1) {
+        puestosTurno.push({ tipo: p.tipo, letraInicial: 'A' });
+      } else {
+        for (let k = 1; k <= p.cantidad; k++) {
+          puestosTurno.push({ tipo: `${p.tipo} ${k}`, letraInicial: 'A' });
+        }
+      }
+    });
+
+    turnos.push({
+      horaInicio: fmt(hi),
+      horaFin: fmt(hf),
+      puestos: puestosTurno
+    });
+  }
+
+  // Aplicar al estado
+  document.getElementById('exName').value = 'Ejercicio (desde enunciado)';
+  document.getElementById('diasTrabajo').value = parsed.T;
+  document.getElementById('diasDescanso').value = parsed.D;
+  document.getElementById('diasTotal').value = 31;
+  document.getElementById('diaInicio').value = 1;
+  state.turnos = turnos;
+
+  if (modoColocar) toggleModoColocar();
+  renderTurnos();
+  autoAsignarLetras();
+  construirTabla();
+  return true;
+}
+
+function mostrarDeteccion(parsed, exito) {
+  const div = document.getElementById('deteccion');
+  div.classList.toggle('error', !exito);
+
+  let html = exito ? '<strong>Detectado:</strong> ' : '<strong>Faltan datos:</strong> ';
+
+  if (exito) {
+    if (parsed.T) html += `<span class="item">${parsed.T} días trabajo</span>`;
+    if (parsed.D) html += `<span class="item">${parsed.D} días descanso</span>`;
+    if (parsed.numTurnos) html += `<span class="item">${parsed.numTurnos} turnos</span>`;
+    if (parsed.horasTurno) html += `<span class="item">${parsed.horasTurno}h por turno</span>`;
+    parsed.puestos.forEach(p => {
+      html += `<span class="item">${p.cantidad} ${p.tipo.toLowerCase()}${p.cantidad > 1 ? 's' : ''}</span>`;
+    });
+    html += '<br><span style="color:var(--muted); font-size:10px; margin-top:6px; display:block;">Puedes ajustar cualquier valor en el panel de la izquierda. Si las letras no coinciden con la solución del profesor, usa "Modo colocar letra".</span>';
+  } else {
+    parsed.errores.forEach(e => {
+      html += `<span class="item" style="color:var(--accent);">${e}</span>`;
+    });
+    html += '<br><span style="color:var(--muted); font-size:10px; margin-top:6px; display:block;">Intenta reformular el enunciado o configura los parámetros manualmente.</span>';
+  }
+
+  div.innerHTML = html;
+  div.classList.add('show');
+}
+
+// ============ HELPERS ============
+function letraDesdeIndice(i) {
+  if (i < 26) return String.fromCharCode(65 + i);
+  const primera = Math.floor(i/26) - 1;
+  return String.fromCharCode(65 + primera) + String.fromCharCode(65 + (i % 26));
+}
+
+function indiceDesdeLetra(letra) {
+  if (!letra) return 0;
+  letra = letra.toUpperCase().trim();
+  if (letra.length === 1) return letra.charCodeAt(0) - 65;
+  if (letra.length === 2) return (letra.charCodeAt(0) - 65 + 1) * 26 + (letra.charCodeAt(1) - 65);
+  return 0;
+}
+
+function sumaPuestos() {
+  return state.turnos.reduce((s, t) => s + t.puestos.length, 0);
+}
+
+function horasTurno(inicio, fin) {
+  const [h1, m1] = inicio.split(':').map(Number);
+  const [h2, m2] = fin.split(':').map(Number);
+  let mins = (h2 * 60 + m2) - (h1 * 60 + m1);
+  if (mins <= 0) mins += 24 * 60;
+  return mins / 60;
+}
+
+function formatHora(hora) {
+  const [h, m] = hora.split(':').map(Number);
+  const periodo = h >= 12 ? 'PM' : 'AM';
+  const h12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+  return m === 0 ? `${h12} ${periodo}` : `${h12}:${String(m).padStart(2,'0')} ${periodo}`;
+}
+
+function nombreTurno(t) {
+  return `${formatHora(t.horaInicio)} - ${formatHora(t.horaFin)}`;
+}
+
+function horasDiaTotales() {
+  let total = 0;
+  state.turnos.forEach(t => {
+    total += horasTurno(t.horaInicio, t.horaFin) * t.puestos.length;
+  });
+  return total;
+}
+
+function getParams() {
+  return {
+    name: document.getElementById('exName').value || 'Ejercicio',
+    T: +document.getElementById('diasTrabajo').value,
+    D: +document.getElementById('diasDescanso').value,
+    totalDias: +document.getElementById('diasTotal').value,
+    diaInicio: +document.getElementById('diaInicio').value
+  };
+}
+
+function calcularN(T, D, puestos) {
+  const N = puestos * (T + D) / T;
+  return { N, esEntero: Number.isInteger(N), ciclo: T+D };
+}
+
+function renderTurnos() {
+  const cont = document.getElementById('turnosList');
+  cont.innerHTML = '';
+  state.turnos.forEach((t, ti) => {
+    const box = document.createElement('div');
+    box.className = 'turno-box';
+
+    let puestosHTML = '';
+    t.puestos.forEach((pu, pi) => {
+      puestosHTML += `
+        <div class="puesto-row">
+          <input type="text" data-ti="${ti}" data-pi="${pi}" data-f="tipo" value="${pu.tipo}" placeholder="Nombre del puesto">
+          <input type="text" class="letra-start" data-ti="${ti}" data-pi="${pi}" data-f="letraInicial" value="${pu.letraInicial}" maxlength="2" title="Letra inicial">
+          <button class="del-p" data-del-p="${ti}-${pi}" title="Eliminar puesto">&times;</button>
+        </div>
+      `;
+    });
+
+    const horas = horasTurno(t.horaInicio, t.horaFin);
+    box.innerHTML = `
+      <div class="turno-header">
+        <div class="horas">
+          <input type="time" data-ti="${ti}" data-f="horaInicio" value="${t.horaInicio}">
+          <span class="dash">&rarr;</span>
+          <input type="time" data-ti="${ti}" data-f="horaFin" value="${t.horaFin}">
+        </div>
+        <button class="del" data-del-t="${ti}" title="Eliminar turno">&times;</button>
+      </div>
+      <div class="turno-nombre-display">${nombreTurno(t)} &middot; ${horas}h</div>
+      <div class="puestos-list">${puestosHTML}</div>
+      <button class="add-puesto" data-add-p="${ti}">+ Anadir puesto</button>
+    `;
+    cont.appendChild(box);
+  });
+
+  cont.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const ti = +e.target.dataset.ti;
+      const f = e.target.dataset.f;
+      if (e.target.dataset.pi !== undefined) {
+        const pi = +e.target.dataset.pi;
+        state.turnos[ti].puestos[pi][f] = e.target.value;
+      } else {
+        state.turnos[ti][f] = e.target.value;
+        if (f === 'horaInicio' || f === 'horaFin') renderTurnos();
+      }
+      construirTabla();
+    });
+  });
+
+  cont.querySelectorAll('[data-del-t]').forEach(b => {
+    b.addEventListener('click', e => {
+      state.turnos.splice(+e.currentTarget.dataset.delT, 1);
+      renderTurnos();
+      construirTabla();
+    });
+  });
+
+  cont.querySelectorAll('[data-del-p]').forEach(b => {
+    b.addEventListener('click', e => {
+      const [ti, pi] = e.currentTarget.dataset.delP.split('-').map(Number);
+      state.turnos[ti].puestos.splice(pi, 1);
+      renderTurnos();
+      construirTabla();
+    });
+  });
+
+  cont.querySelectorAll('[data-add-p]').forEach(b => {
+    b.addEventListener('click', e => {
+      const ti = +e.currentTarget.dataset.addP;
+      const n = state.turnos[ti].puestos.length + 1;
+      state.turnos[ti].puestos.push({ tipo: `Puesto ${n}`, letraInicial: 'A' });
+      renderTurnos();
+      construirTabla();
+    });
+  });
+}
+
+function autoAsignarLetras() {
+  const p = getParams();
+  const puestosDia = sumaPuestos();
+  if (puestosDia === 0) return;
+  const { N } = calcularN(p.T, p.D, puestosDia);
+  const Nvig = Math.ceil(N);
+
+  let offset = 0;
+  state.turnos.forEach((t, ti) => {
+    if (ti > 0) offset = (offset - 1 + Nvig) % Nvig;
+    t.puestos.forEach(pu => {
+      pu.letraInicial = letraDesdeIndice(offset % Nvig);
+      offset = (offset + p.T) % Nvig;
+    });
+  });
+  renderTurnos();
+}
+
+function toggleModoColocar() {
+  modoColocar = !modoColocar;
+  document.getElementById('tabla').classList.toggle('editable', modoColocar);
+  const btn = document.getElementById('modoColocar');
+  btn.classList.toggle('activo', modoColocar);
+  btn.textContent = modoColocar ? 'Modo activo (clic para salir)' : 'Modo colocar letra (clic en celda)';
+
+  const banner = document.getElementById('modoBannerBox');
+  if (modoColocar) {
+    banner.innerHTML = `<div class="modo-banner">
+      <span>MODO COLOCAR ACTIVO &middot; clic en una celda y escribe la letra</span>
+      <button id="bannerSalir">Salir</button>
+    </div>`;
+    document.getElementById('bannerSalir').addEventListener('click', toggleModoColocar);
+  } else {
+    banner.innerHTML = '';
+  }
+}
+
+function abrirModalCelda(ti, pi, dia) {
+  celdaActiva = { ti, pi, dia };
+  const t = state.turnos[ti];
+  const pu = t.puestos[pi];
+  document.getElementById('modalInfo').textContent =
+    `Dia ${dia} · ${nombreTurno(t)} · ${pu.tipo}`;
+  document.getElementById('modalInput').value = '';
+  document.getElementById('modalBg').classList.add('show');
+  setTimeout(() => document.getElementById('modalInput').focus(), 50);
+}
+
+function colocarLetraEnCelda(letra) {
+  if (!celdaActiva) return;
+  const p = getParams();
+  const { ti, pi, dia } = celdaActiva;
+  const pu = state.turnos[ti].puestos[pi];
+  const Nvig = Math.ceil(calcularN(p.T, p.D, sumaPuestos()).N);
+
+  const dRel = dia - p.diaInicio;
+  const bloque = Math.floor(dRel / p.T);
+  const letraIdx = indiceDesdeLetra(letra);
+  const nuevoOffset = ((letraIdx - bloque) % Nvig + Nvig) % Nvig;
+
+  pu.letraInicial = letraDesdeIndice(nuevoOffset);
+  renderTurnos();
+  construirTabla();
+  cerrarModal();
+}
+
+function cerrarModal() {
+  document.getElementById('modalBg').classList.remove('show');
+  celdaActiva = null;
+}
+
+function construirTabla() {
+  const p = getParams();
+  const puestosDia = sumaPuestos();
+
+  if (puestosDia === 0) {
+    document.getElementById('tabla').innerHTML = '<tr><td style="padding:40px; text-align:center; color:var(--muted);">No hay puestos configurados.</td></tr>';
+    return;
+  }
+
+  const { N, esEntero, ciclo } = calcularN(p.T, p.D, puestosDia);
+  const Nvig = Math.ceil(N);
+  const horasDia = horasDiaTotales();
+
+  document.getElementById('sVig').textContent = esEntero ? N : Nvig + '*';
+  document.getElementById('sPuestos').textContent = puestosDia;
+  document.getElementById('sHoras').textContent = horasDia;
+  document.getElementById('sCiclo').textContent = ciclo;
+
+  document.getElementById('formulaBox').innerHTML = `
+    N = P &times; (T + D) / T = <code>${puestosDia} &times; (${p.T} + ${p.D}) / ${p.T}</code> = <strong>${esEntero ? N : N.toFixed(3) + ' &rarr; ' + Nvig}</strong>
+  `;
+
+  const warnBox = document.getElementById('warnBox');
+  warnBox.innerHTML = '';
+  if (!esEntero) {
+    warnBox.innerHTML += `<div class="warn"><strong>Aviso:</strong> N no es entero. Se redondea a ${Nvig}.</div>`;
+  }
+  const letrasDia1 = new Set();
+  state.turnos.forEach(t => t.puestos.forEach(pu => letrasDia1.add(indiceDesdeLetra(pu.letraInicial) % Nvig)));
+  if (letrasDia1.size !== puestosDia) {
+    warnBox.innerHTML += `<div class="warn"><strong>Aviso:</strong> en el dia 1 hay letras repetidas. Cada dia deben aparecer ${puestosDia} letras distintas.</div>`;
+  }
+
+  const tabla = document.getElementById('tabla');
+  let html = '';
+
+  html += '<tr><th class="turno-label">Turno</th><th class="puesto-label">Puesto</th>';
+  for (let d = 0; d < p.totalDias; d++) {
+    const dia = p.diaInicio + d;
+    const esBloque = d % p.T === 0 && d > 0;
+    html += `<th class="day-num ${esBloque ? 'cell-block-start' : ''}">${dia}</th>`;
+  }
+  html += '</tr>';
+
+  state.turnos.forEach((t, ti) => {
+    const horas = horasTurno(t.horaInicio, t.horaFin);
+    t.puestos.forEach((pu, pi) => {
+      const esPrimera = pi === 0;
+      const trClass = (ti > 0 && pi === 0) ? 'turno-divider' : '';
+      html += `<tr class="${trClass}">`;
+      if (esPrimera) {
+        html += `<th class="turno-label" rowspan="${t.puestos.length}">
+          <span class="h">${nombreTurno(t)}</span>
+          <span class="d">${horas}h por dia</span>
+        </th>`;
+      }
+      html += `<th class="puesto-label">${pu.tipo}</th>`;
+
+      const letraInicialIdx = indiceDesdeLetra(pu.letraInicial);
+      for (let d = 0; d < p.totalDias; d++) {
+        const dia = p.diaInicio + d;
+        const bloque = Math.floor(d / p.T);
+        const letraIdx = (letraInicialIdx + bloque) % Nvig;
+        const letra = letraDesdeIndice(letraIdx);
+        const color = colorPorLetra(letraIdx);
+        const esBloque = d % p.T === 0 && d > 0;
+        html += `<td class="cell ${esBloque ? 'cell-block-start' : ''}" style="color:${color};" data-ti="${ti}" data-pi="${pi}" data-dia="${dia}" title="Dia ${dia}">${letra}</td>`;
+      }
+      html += '</tr>';
+    });
+  });
+
+  tabla.innerHTML = html;
+
+  tabla.querySelectorAll('td.cell').forEach(td => {
+    td.addEventListener('click', e => {
+      if (!modoColocar) return;
+      const ti = +td.dataset.ti;
+      const pi = +td.dataset.pi;
+      const dia = +td.dataset.dia;
+      abrirModalCelda(ti, pi, dia);
+    });
+  });
+
+  document.getElementById('tblTitle').textContent = p.name;
+  document.getElementById('tblSub').textContent =
+    `${puestosDia} puestos/dia · ${horasDia}h totales · ${p.T} trabajo x ${p.D} descanso · ${Nvig} vigilantes (${letraDesdeIndice(0)} a ${letraDesdeIndice(Nvig-1)})`;
+}
+
+function colorPorLetra(idx) {
+  const colores = ['#1e4d8b', '#c1272d', '#2d7a3e', '#8b4513', '#6a1b9a', '#b71c1c', '#004d40', '#4527a0', '#e65100', '#1b5e20', '#880e4f', '#0d47a1', '#3e2723', '#bf360c', '#1a237e', '#33691e', '#4a148c', '#01579b'];
+  return colores[idx % colores.length];
+}
+
+function loadPreset(key) {
+  const p = PRESETS[key];
+  document.getElementById('exName').value = p.name;
+  document.getElementById('diasTrabajo').value = p.T;
+  document.getElementById('diasDescanso').value = p.D;
+  document.getElementById('diasTotal').value = p.totalDias;
+  document.getElementById('diaInicio').value = p.diaInicio;
+  state.turnos = JSON.parse(JSON.stringify(p.turnos));
+  if (modoColocar) toggleModoColocar();
+  renderTurnos();
+  construirTabla();
+}
+
+function tablaATexto(sep) {
+  if (!sep) sep = '\t';
+  const tabla = document.getElementById('tabla');
+  return Array.from(tabla.querySelectorAll('tr')).map(tr =>
+    Array.from(tr.querySelectorAll('th, td')).map(c => c.textContent.trim().replace(/\s+/g,' ')).join(sep)
+  ).join('\n');
+}
+
+// ============ EVENT LISTENERS ============
+
+// RESOLVER ENUNCIADO
+document.getElementById('btnResolver').addEventListener('click', () => {
+  const texto = document.getElementById('enunciadoTxt').value.trim();
+  if (!texto) {
+    alert('Pega primero el enunciado del ejercicio en el cuadro de texto.');
+    return;
+  }
+  const parsed = parsearEnunciado(texto);
+  const exito = parsed.T && parsed.D && parsed.puestos.length > 0;
+  mostrarDeteccion(parsed, exito);
+
+  if (exito) {
+    aplicarEnunciadoParseado(parsed);
+    // Scroll a la tabla
+    setTimeout(() => {
+      document.querySelector('.table-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+});
+
+document.querySelectorAll('[data-ejemplo]').forEach(a => {
+  a.addEventListener('click', () => {
+    document.getElementById('enunciadoTxt').value = EJEMPLOS_TEXTO[a.dataset.ejemplo];
+  });
+});
+
+document.querySelectorAll('[data-preset]').forEach(btn => {
+  btn.addEventListener('click', () => loadPreset(btn.dataset.preset));
+});
+
+document.getElementById('addTurno').addEventListener('click', () => {
+  state.turnos.push({
+    horaInicio: '06:00',
+    horaFin: '18:00',
+    puestos: [{ tipo: 'Puesto 1', letraInicial: 'A' }]
+  });
+  renderTurnos();
+  construirTabla();
+});
+
+document.getElementById('autoLetras').addEventListener('click', () => {
+  autoAsignarLetras();
+  construirTabla();
+});
+
+document.getElementById('modoColocar').addEventListener('click', toggleModoColocar);
+document.getElementById('calcular').addEventListener('click', construirTabla);
+document.getElementById('btnPrint').addEventListener('click', () => window.print());
+
+document.getElementById('btnCopy').addEventListener('click', () => {
+  navigator.clipboard.writeText(tablaATexto()).then(() => {
+    const b = document.getElementById('btnCopy');
+    const orig = b.textContent;
+    b.textContent = 'Copiado';
+    setTimeout(() => b.textContent = orig, 1500);
+  });
+});
+
+document.getElementById('btnCSV').addEventListener('click', () => {
+  const csv = tablaATexto(',');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${document.getElementById('exName').value || 'vigilantes'}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+['diasTrabajo','diasDescanso','diasTotal','diaInicio','exName'].forEach(id => {
+  document.getElementById(id).addEventListener('change', construirTabla);
+});
+
+document.getElementById('modalCancel').addEventListener('click', cerrarModal);
+document.getElementById('modalBg').addEventListener('click', e => {
+  if (e.target.id === 'modalBg') cerrarModal();
+});
+document.getElementById('modalOk').addEventListener('click', () => {
+  const v = document.getElementById('modalInput').value.trim().toUpperCase();
+  if (v) colocarLetraEnCelda(v);
+});
+document.getElementById('modalInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const v = e.target.value.trim().toUpperCase();
+    if (v) colocarLetraEnCelda(v);
+  } else if (e.key === 'Escape') {
+    cerrarModal();
+  }
+});
+
+document.getElementById('metaDate').textContent = new Date().toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' }).toUpperCase();
+loadPreset('planta');
+</script>
+</body>
+</html>
